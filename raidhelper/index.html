@@ -1,0 +1,248 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Raid Sign Up Config</title>
+  <style>
+    body {
+      font-family: 'Verdana', sans-serif;
+      background-color: #1a1a1a;
+      color: #f5deb3;
+      padding: 2rem;
+    }
+
+    h1 {
+      font-family: 'Georgia', serif;
+      color: #ffd700;
+      text-shadow: 1px 1px #000;
+      margin-bottom: 2rem;
+    }
+
+    label {
+      font-weight: bold;
+      color: #fffacd;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+      border-radius: 4px;
+      border: 1px solid #b8860b;
+      background-color: #2f2f2f;
+      color: #fffacd;
+    }
+
+    .row {
+      display: flex;
+      gap: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .row > div {
+      flex: 1;
+    }
+
+    .output, .highlight {
+      background: #0d0d0d;
+      padding: 1rem;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      margin: 1rem 0;
+      font-family: monospace;
+      color: #00ffcc;
+      border: 1px solid #444;
+      box-shadow: 0 0 10px #000;
+    }
+
+    .highlight {
+      padding: 0.5rem;
+      margin: 0;
+    }
+  </style>
+
+</head>
+<body>
+  <h1>Raid Event Helper</h1>
+  
+  <p><a href="https://www.classicraidreset.com/US/Classic" target=_blank">Classic Raid Reset Calendar</a></p>
+
+  <div class="row">
+    <div>
+      <label for="raid">Raid/Event Name</label>
+      <select id="raid">
+        <option value="mc">Molten Core</option>
+        <option value="bwl">Blackwing Lair</option>
+        <option value="onyxia">Onyxia's Lair</option>
+        <option value="zg" selected>Zul'Gurub</option>
+      </select>
+    </div>
+    <div>
+      <label for="lead">Raid Lead</label>
+      <input type="text" id="lead" placeholder="TBD" value="TBD" />
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <label for="date">Date</label>
+      <input type="date" id="date" />
+    </div>
+    <div>
+      <label for="time">Time <small><em>(Server Time)</em></small></label>
+      <select id="time">
+        <!-- Time options from 08:00 to 23:30 in 30-minute increments -->
+        <script>
+          for (let h = 8; h <= 23; h++) {
+            ['00', '30'].forEach(m => {
+              const timeStr = `${h.toString().padStart(2, '0')}:${m}`;
+              const selected = timeStr === '18:00' ? 'selected' : '';
+              document.write(`<option value="${timeStr}" ${selected}>${timeStr}</option>`);
+            });
+          }
+        </script>
+      </select>
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <label for="channel">Discord Channel</label>
+      <input type="text" id="channel" placeholder="#may-2-zg" />
+    </div>
+    <div>
+      <label for="softres">Soft-Reserve Limit</label>
+      <select id="softres">
+        <script>
+          for (let i = 1; i <= 10; i++) {
+            const selected = i === 2 ? 'selected' : ''; // Default set to 2
+            document.write(`<option value="${i}" ${selected}>${i}</option>`);
+          }
+        </script>
+      </select>
+    </div>
+  </div>
+
+  <div class="row">
+    <div style="flex: 2;">
+      <label for="customMessage">Event Description</label>
+      <input type="text" id="customMessage" placeholder="Example: First 20 to signup get priority spots." />
+    </div>
+  </div>
+
+  <h2>Instructions</h2>
+
+  <ol style="line-height: 2em">
+    <li>Create channel under Calendar category in Discord, called <span id="channelName" class="highlight"></span></li>
+    <li>In the new channel, type <span class="highlight">/quickcreate</span> and hit enter.
+    <li>In the <span class="highlight">arguments</span>, where your cursor should be after hitting enter, copy and paste this:<br>
+      <div class="output" id="result"></div>
+    </li>
+    <li>Hit enter and wait a moment for the event to be created. You should also receive a DM from the Raid-Helper bot.</li>
+    <li>The bot message should include the token for the SR, along with a bit of additional info about the event. Right click on that message and forward it to the <span class="highlight">#tokens</span> channel so others can modify the hard reserves, if necessary.</li>
+  </ol>
+
+  <p>
+    <strong>Important Note:</strong> <em>There is currently no way to automate the hard reserves, so that still needs to be done manually for each event.</em>
+  </p>
+
+  <script>
+    const raidSelect = document.getElementById('raid');
+    const dateInput = document.getElementById('date');
+    const channelInput = document.getElementById('channel');
+    const channelName = document.getElementById('channelName');
+    const timeInput = document.getElementById('time');
+    const leadInput = document.getElementById('lead');
+    const softResSelect = document.getElementById('softres');
+    const customMessageInput = document.getElementById('customMessage');
+    const result = document.getElementById('result');
+
+    const raidLabels = {
+      mc: 'MC',
+      bwl: 'BWL',
+      onyxia: "Ony",
+      zg: 'ZG'
+    };
+
+    const raidColors = {
+      mc: '#B22222',
+      bwl: '#8B1A1A',
+      onyxia: '#4B0082',
+      zg: '#305E23'
+    };
+
+    function formatDateString(dateStr) {
+      if (!dateStr) return '';
+      const date = new Date(dateStr + 'T00:00:00');
+      const day = date.getDate();
+      const month = date.toLocaleString('default', { month: 'short' }); // + '.';
+      return `${month} ${day}`;
+    }
+
+    function formatDateForField(dateStr) {
+      if (!dateStr) return '';
+      const date = new Date(dateStr + 'T00:00:00');
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = date.toLocaleString('default', { month: 'short' });
+      const year = date.getFullYear();
+      return `${day}-${month}-${year}`;
+    }
+
+    function updateChannelFromDateAndRaid(raid, dateStr) {
+      if (!dateStr || !raid) return;
+      const date = new Date(dateStr + 'T00:00:00');
+      const month = date.toLocaleString('default', { month: 'short' }).toLowerCase();
+      const day = date.getDate();
+      const raidSuffix = raid === 'onyxia' ? 'ony' : raid;
+      channelInput.value = `#${month}-${day}-${raidSuffix}`;
+      channelName.innerText = channelInput.value;
+    }
+
+    function updateTemplate() {
+      const raid = raidSelect.value;
+      const raidLabel = raidLabels[raid];
+      const color = raidColors[raid];
+      const rawDate = dateInput.value;
+      const formattedDate = formatDateString(rawDate);
+      const formattedFieldDate = formatDateForField(rawDate);
+      const channel = channelInput.value;
+      const time = timeInput.value;
+      const lead = leadInput.value;
+      const softResLimit = softResSelect.value;
+      const customMessage = customMessageInput.value;
+
+      // Check if the custom message is empty and remove the emoji if so
+      const formattedMessage = customMessage ? `\\n> ${customMessage}` : customMessage;
+
+      const template = `[template:02][title:${raidLabel} - ${formattedDate}][channel:${channel}][date:${formattedFieldDate}][time:${time}][advanced:<color:${color}>][description:<:raid:1124529969926779050> Raid Lead: ${lead}${formattedMessage}][softres:${raid},horde,${softResLimit},0,protected,visible,yes,yes]`;
+
+      result.textContent = template;
+    }
+
+    function handleAutoUpdate() {
+      updateChannelFromDateAndRaid(raidSelect.value, dateInput.value);
+      updateTemplate();
+    }
+
+    raidSelect.addEventListener('input', handleAutoUpdate);
+    dateInput.addEventListener('input', handleAutoUpdate);
+    channelInput.addEventListener('input', updateTemplate);
+    timeInput.addEventListener('input', updateTemplate);
+    leadInput.addEventListener('input', updateTemplate);
+    softResSelect.addEventListener('input', updateTemplate);
+    customMessageInput.addEventListener('input', updateTemplate);
+
+    // Set default date to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const yyyy = tomorrow.getFullYear();
+    const mm = (tomorrow.getMonth() + 1).toString().padStart(2, '0');
+    const dd = tomorrow.getDate().toString().padStart(2, '0');
+    dateInput.value = `${yyyy}-${mm}-${dd}`;
+
+    updateChannelFromDateAndRaid(raidSelect.value, dateInput.value);
+    updateTemplate();
+  </script>
+</body>
+</html>
