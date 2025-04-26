@@ -66,7 +66,10 @@
 <body>
   <h1>Raid Event Helper</h1>
   
-  <p><a href="https://www.classicraidreset.com/US/Classic" target=_blank">Classic Raid Reset Calendar</a></p>
+  <p style="margin-bottom:3em">
+    <a href="https://jimmys.tech/wow/resets/" target="_blank" style="color:#b8860b">Upcoming Raid Resets</a>
+  </p>
+
 
   <div class="row">
     <div>
@@ -147,6 +150,12 @@
     <strong>Important Note:</strong> <em>There is currently no way to automate the hard reserves, so that still needs to be done manually for each event.</em>
   </p>
 
+  <strong>To-Do:</strong>
+  <ul>
+    <li>Add announcement input with default values</li>
+    <li>Review advanced option overrides</li>
+  </ul>
+
   <script>
     const raidSelect = document.getElementById('raid');
     const dateInput = document.getElementById('date');
@@ -171,6 +180,13 @@
       onyxia: '#4B0082',
       zg: '#305E23'
     };
+   
+    const raidImages = {
+      mc: 'https://jimmys.tech/wow/images/raidhelper_banners/mc_1.webp',
+      bwl: 'https://jimmys.tech/wow/images/raidhelper_banners/bwl.webp',
+      onyxia: 'https://jimmys.tech/wow/images/raidhelper_banners/ony_1.webp',
+      zg: 'https://jimmys.tech/wow/images/raidhelper_banners/zg_1.webp'
+    };  
 
     function formatDateString(dateStr) {
       if (!dateStr) return '';
@@ -211,11 +227,12 @@
       const lead = leadInput.value;
       const softResLimit = softResSelect.value;
       const customMessage = customMessageInput.value;
+      const image = raidImages[raid];
 
       // Check if the custom message is empty and remove the emoji if so
       const formattedMessage = customMessage ? `\\n> ${customMessage}` : customMessage;
 
-      const template = `[template:02][title:${raidLabel} - ${formattedDate}][channel:${channel}][date:${formattedFieldDate}][time:${time}][advanced:<color:${color}>][description:<:raid:1124529969926779050> Raid Lead: ${lead}${formattedMessage}][softres:${raid},horde,${softResLimit},0,protected,visible,yes,yes]`;
+      const template = `[template:02][title:${raidLabel} - ${formattedDate}][channel:${channel}][date:${formattedFieldDate}][time:${time}][advanced:<color:${color}>][description:<:raid:1124529969926779050> Raid Lead: ${lead}${formattedMessage}][mentions:Critical Raider][image:${image}][softres:${raid},horde,${softResLimit},0,protected,visible,yes,yes]`;
 
       result.textContent = template;
     }
