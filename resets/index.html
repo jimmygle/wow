@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WoW Classic Raid Resets</title>
+  <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 1em;
+      font-family: 'Georgia', serif;
+      background: #1a1a1a url('https://www.transparenttextures.com/patterns/dark-mosaic.png');
+      color: #eee;
+    }
+
+    h1 {
+      font-family: 'UnifrakturCook', cursive;
+      text-align: center;
+      font-size: 2.5em;
+      color: #ffcc00;
+      text-shadow: 2px 2px 4px black;
+      margin-bottom: 1em;
+    }
+
+    .calendar {
+      max-width: 900px;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5em;
+    }
+
+    .date-block {
+      background: linear-gradient(135deg, #2c2c2c, #1a1a1a);
+      border: 2px solid #c6a84f;
+      border-radius: 10px;
+      padding: 1em;
+      box-shadow: 0 0 10px #000;
+    }
+
+    .highlight {
+      border: 3px solid #ffcc00;
+      box-shadow: 0 0 15px #ffcc00;
+    }
+
+    .no-reset {
+      opacity: 0.4;
+    }
+
+    .date-header {
+      font-size: 1.3em;
+      color: #ffd700;
+      margin-bottom: 0.5em;
+      border-bottom: 1px solid #555;
+      padding-bottom: 0.3em;
+    }
+
+    .raid-entry {
+      margin-left: 1em;
+      margin-bottom: 0.5em;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-weight: 600;
+      display: inline-block;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      box-shadow: none;
+    }
+
+    .onyxia {
+      background-color: #732727;
+      color: #ffe4cc;
+    }
+
+    .molten-core {
+      background-color: #cc4400;
+      color: #ffe5b4;
+    }
+
+    .blackwing-lair {
+      background-color: #770000;
+      color: #ffcccc;
+    }
+
+    .zul-gurub {
+      background-color: #007700;
+      color: #ddffdd;
+    }
+
+    .date-selector {
+      text-align: center;
+      margin: auto;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, #2c2c2c, #1a1a1a);
+      padding: 1em;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #000;
+      max-width: 900px;
+    }
+
+    .date-selector label {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #ffcc00;
+    }
+
+    .date-selector input[type="date"] {
+      padding: 0.5em;
+      font-size: 1.1em;
+      background-color: #2e2e2e;
+      border: none;
+      color: #fff;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+    }
+
+    .date-selector input[type="date"]:hover {
+      background-color: #1f1f1f;
+      cursor: pointer;
+    }
+
+    .date-selector input[type="date"]:focus {
+      background-color: #4b4b4b;
+      outline: 2px solid #ffcc00;
+    }
+  </style>
+</head>
+<body>
+  <h1>WoW Classic Anniversary Raid Reset Calendar</h1>
+
+  <div class="date-selector">
+    <label for="start-date">View resets starting from:&nbsp;&nbsp;</label>
+    <input type="date" id="start-date" min="2024-12-01" />
+  </div>
+
+  <div class="calendar" id="calendar"></div>
+
+  <script>
+    const raidResets = [
+      { name: "Onyxia's Lair", className: "onyxia", intervalDays: 5, firstResetDate: "2024-12-14" },
+      { name: "Molten Core", className: "molten-core", intervalDays: 7, firstResetDate: "2024-12-17" },
+      { name: "Blackwing Lair", className: "blackwing-lair", intervalDays: 7, firstResetDate: "2025-03-25" },
+      { name: "Zul'Gurub", className: "zul-gurub", intervalDays: 3, firstResetDate: "2025-05-02" },
+    ];
+
+    const resetHourUTC = 13;
+    const daysToShow = 14;
+
+    function getAllResetEvents(startDate) {
+      const events = [];
+      raidResets.forEach(({ name, className, intervalDays, firstResetDate }) => {
+        let date = new Date(firstResetDate + "T00:00:00Z");
+        date.setUTCHours(resetHourUTC, 0, 0, 0);
+        const limit = new Date(startDate);
+        limit.setDate(limit.getDate() + daysToShow);
+        while (date <= limit) {
+          if (date >= new Date(startDate)) {
+            events.push({ date: new Date(date), name, className });
+          }
+          date.setUTCDate(date.getUTCDate() + intervalDays);
+        }
+      });
+
+      const onyMcLaunchDate = new Date("2024-12-12T13:00:00Z");
+      if (new Date(startDate) <= onyMcLaunchDate) {
+        events.push(
+          { date: new Date(onyMcLaunchDate), name: "Onyxia's Lair Opens", className: "onyxia highlight" },
+          { date: new Date(onyMcLaunchDate), name: "Molten Core Opens", className: "molten-core highlight" }
+        );
+      }
+
+      const bwlLaunchDate = new Date("2025-03-20T13:00:00Z");
+      if (new Date(startDate) <= bwlLaunchDate) {
+        events.push(
+          { date: new Date(bwlLaunchDate), name: "Blackwing Lair Opens", className: "blackwing-lair highlight" },
+        );
+      }
+
+      const zgLaunchDate = new Date("2025-05-01T13:00:00Z");
+      if (new Date(startDate) <= zgLaunchDate) {
+        events.push(
+          { date: new Date(zgLaunchDate), name: "Zul'Gurub Opens", className: "zul-gurub highlight" },
+        );
+      }
+
+      return events;
+    }
+
+    function formatDateLabel(date) {
+      return new Intl.DateTimeFormat('en-US', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'America/Belize'
+      }).format(date);
+    }
+
+    function buildCalendar(startDateStr) {
+      const startDate = new Date(startDateStr + 'T07:00:00-06:00');
+      const now = new Date();
+      const localToday = new Date(now.toLocaleDateString('en-US', { timeZone: 'America/Belize' }));
+
+      const resetEvents = getAllResetEvents(startDate);
+      const grouped = {};
+      for (let i = 0; i < daysToShow; i++) {
+        const date = new Date(startDate);
+        date.setDate(date.getDate() + i);
+        const label = formatDateLabel(date);
+        grouped[label] = [];
+      }
+      resetEvents.forEach(({ date, name, className }) => {
+        const label = formatDateLabel(date);
+        if (!grouped[label]) grouped[label] = [];
+        grouped[label].push({ name, className, rawDate: date });
+      });
+
+      const container = document.getElementById("calendar");
+      container.innerHTML = "";
+
+      Object.entries(grouped).forEach(([label, entries]) => {
+        const block = document.createElement("div");
+        block.className = "date-block";
+        if (entries.length === 0) block.classList.add("no-reset");
+        if (entries.some(({ rawDate }) => rawDate.toLocaleDateString('en-US', { timeZone: 'America/Belize' }) === localToday.toLocaleDateString('en-US', { timeZone: 'America/Belize' }))) {
+          block.classList.add("highlight");
+        }
+
+        const header = document.createElement("div");
+        header.className = "date-header";
+        header.textContent = label;
+        block.appendChild(header);
+
+        entries.forEach(({ name, className }) => {
+          const item = document.createElement("div");
+          item.className = `raid-entry ${className}`;
+          item.textContent = name;
+          block.appendChild(item);
+        });
+
+        container.appendChild(block);
+      });
+    }
+
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${yyyy}-${mm}-${dd}`;
+    document.getElementById("start-date").value = todayStr;
+
+    document.getElementById("start-date").addEventListener("input", (event) => {
+      buildCalendar(event.target.value);
+    });
+
+    buildCalendar(todayStr);
+  </script>
+</body>
+</html>
