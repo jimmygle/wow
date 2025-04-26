@@ -15,9 +15,8 @@
     }
 
     h1 {
-      font-family: 'UnifrakturCook', cursive;
       text-align: center;
-      font-size: 2.5em;
+      font-size: 2em;
       color: #ffcc00;
       text-shadow: 2px 2px 4px black;
       margin-bottom: 1em;
@@ -60,13 +59,26 @@
       transition: all 0.3s ease;
     }
 
-    #prev-week:hover, #next-week:hover {
+    #today-button {
+      background-color: #2e2e2e;
+      color: #ffcc00;
+      font-size: 14px;
+      border: 2px solid #ffcc00;
+      border-radius: 5px;
+      padding: 5px 15px;
+      cursor: pointer;
+      text-shadow: 1px 1px 2px #000;
+      box-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+      transition: all 0.3s ease;
+    }
+
+    #prev-week:hover, #next-week:hover, #today-button:hover {
       background-color: #444;
       box-shadow: 0 0 15px rgba(255, 204, 0, 0.8);
       transform: scale(1.1);
     }
 
-    #prev-week:active, #next-week:active {
+    #prev-week:active, #next-week:active, #today-button:active {
       background-color: #1a1a1a;
       box-shadow: 0 0 5px rgba(255, 204, 0, 0.5);
       transform: scale(0.95);
@@ -158,6 +170,29 @@
       font-size: 1.2em;
       font-weight: bold;
       color: #ffcc00;
+      display: block;
+      display: none;
+    }
+
+    .date-selector button {
+      padding: 0.5em 1em;
+      font-size: 1.1em;
+      background-color: #2e2e2e;
+      border: none;
+      color: #fff;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+      margin: 0 0.5em;
+    }
+
+    .date-selector button:hover {
+      background-color: #1f1f1f;
+      cursor: pointer;
+    }
+
+    .date-selector button:focus {
+      background-color: #4b4b4b;
+      outline: 2px solid #ffcc00;
     }
 
     .date-selector input[type="date"] {
@@ -182,22 +217,37 @@
   </style>
 </head>
 <body>
-  <h1>WoW Classic Anniversary Raid Reset Calendar</h1>
+  <h1>WoW Classic Anniversary - Raid Reset Calendar (US)</h1>
 
   <div class="date-selector">
     <label for="start-date">View resets starting from:&nbsp;&nbsp;</label>
     <button id="prev-week" type="button">←</button>
     <input type="date" id="start-date" min="2024-12-01" />
+    <button id="today-button" type="button">Today</button>
     <button id="next-week" type="button">→</button>
   </div>
   
-  <script>
- 
-  </script>
-
   <div class="calendar" id="calendar"></div>
 
   <script>
+    document.getElementById("today-button").addEventListener("click", () => {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      const todayStr = `${yyyy}-${mm}-${dd}`;
+
+      // Set the date input to today's date
+      const dateInput = document.getElementById("start-date");
+      dateInput.value = todayStr;
+
+      // Save today's date to localStorage
+      localStorage.setItem('selectedDate', todayStr);
+
+      // Trigger any additional logic (e.g., rebuilding the calendar)
+      buildCalendar(todayStr);
+    });
+
     // Utility function to set a cookie
     function setCookie(name, value, days) {
       const date = new Date();
@@ -268,7 +318,7 @@
     ];
 
     const resetHourUTC = 13;
-    const daysToShow = 14;
+    const daysToShow = 30;
 
     function getAllResetEvents(startDate) {
       const events = [];
@@ -338,11 +388,15 @@
       const container = document.getElementById("calendar");
       container.innerHTML = "";
 
+      const today = formatDateLabel(localToday);
+
       Object.entries(grouped).forEach(([label, entries]) => {
         const block = document.createElement("div");
         block.className = "date-block";
         if (entries.length === 0) block.classList.add("no-reset");
-        if (entries.some(({ rawDate }) => rawDate.toLocaleDateString('en-US', { timeZone: 'America/Belize' }) === localToday.toLocaleDateString('en-US', { timeZone: 'America/Belize' }))) {
+
+        // Add highlight class if the label matches today's date
+        if (label === today) {
           block.classList.add("highlight");
         }
 
