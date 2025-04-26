@@ -31,6 +31,62 @@
       gap: 1.5em;
     }
 
+    .date-selector {
+      margin: 20px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .date-selector label {
+      font-size: 18px;
+      color: #ffcc00;
+      font-family: "Georgia", serif;
+    }
+
+    #prev-week, #next-week {
+      background-color: #2e2e2e;
+      color: #ffcc00;
+      font-family: "Georgia", serif;
+      font-size: 18px;
+      font-weight: bold;
+      border: 2px solid #ffcc00;
+      border-radius: 5px;
+      padding: 5px 15px;
+      cursor: pointer;
+      text-shadow: 1px 1px 2px #000;
+      box-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+      transition: all 0.3s ease;
+    }
+
+    #prev-week:hover, #next-week:hover {
+      background-color: #444;
+      box-shadow: 0 0 15px rgba(255, 204, 0, 0.8);
+      transform: scale(1.1);
+    }
+
+    #prev-week:active, #next-week:active {
+      background-color: #1a1a1a;
+      box-shadow: 0 0 5px rgba(255, 204, 0, 0.5);
+      transform: scale(0.95);
+    }
+
+    #start-date {
+      font-size: 16px;
+      padding: 5px;
+      border: 2px solid #ffcc00;
+      border-radius: 5px;
+      background-color: #2e2e2e;
+      color: #fff;
+      text-align: center;
+    }
+
+    #start-date:focus {
+      outline: none;
+      box-shadow: 0 0 10px rgba(255, 204, 0, 0.8);
+    }
+
     .date-block {
       background: linear-gradient(135deg, #2c2c2c, #1a1a1a);
       border: 2px solid #c6a84f;
@@ -130,12 +186,80 @@
 
   <div class="date-selector">
     <label for="start-date">View resets starting from:&nbsp;&nbsp;</label>
+    <button id="prev-week" type="button">←</button>
     <input type="date" id="start-date" min="2024-12-01" />
+    <button id="next-week" type="button">→</button>
   </div>
+  
+  <script>
+ 
+  </script>
 
   <div class="calendar" id="calendar"></div>
 
   <script>
+    // Utility function to set a cookie
+    function setCookie(name, value, days) {
+      const date = new Date();
+      date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000); // Expiry in days
+      document.cookie = `${name}=${value};expires=${date.toUTCString()};path=/`;
+    }
+
+    // Utility function to get a cookie
+    function getCookie(name) {
+      const cookies = document.cookie.split('; ');
+      for (let cookie of cookies) {
+        const [key, value] = cookie.split('=');
+        if (key === name) {
+          return value;
+        }
+      }
+      return null;
+    }
+
+    // Initialize the date input on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      const dateInput = document.getElementById('start-date');
+      const savedDate = getCookie('selectedDate');
+
+      // Set the date input to the saved date or default to today
+      if (savedDate) {
+        dateInput.value = savedDate;
+      } else {
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.value = today;
+      }
+    });
+
+    // Get references to the elements
+    const dateInput = document.getElementById('start-date');
+    const prevWeekButton = document.getElementById('prev-week');
+    const nextWeekButton = document.getElementById('next-week');
+  
+    // Function to adjust the date by a given number of days
+    function adjustDate(days) {
+      const currentDate = dateInput.value ? new Date(dateInput.value) : new Date();
+      currentDate.setDate(currentDate.getDate() + days);
+      dateInput.value = currentDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+    
+      // Dispatch a 'change' event to trigger other listeners
+      const changeEvent = new Event('change', { bubbles: true });
+      dateInput.dispatchEvent(changeEvent);
+  
+      // Dispatch an 'input' event as a fallback
+      const inputEvent = new Event('input', { bubbles: true });
+      dateInput.dispatchEvent(inputEvent);
+    }
+  
+    // Event listeners for the buttons
+    prevWeekButton.addEventListener('click', () => adjustDate(-7)); // Move back 7 days
+    nextWeekButton.addEventListener('click', () => adjustDate(7));  // Move forward 7 days
+  
+    // Example listener for the 'change' event
+    dateInput.addEventListener('change', () => {
+      buildCalendar(dateInput.value); // Call the function to build the calendar
+    });
+
     const raidResets = [
       { name: "Onyxia's Lair", className: "onyxia", intervalDays: 5, firstResetDate: "2024-12-14" },
       { name: "Molten Core", className: "molten-core", intervalDays: 7, firstResetDate: "2024-12-17" },
@@ -247,6 +371,7 @@
 
     document.getElementById("start-date").addEventListener("input", (event) => {
       buildCalendar(event.target.value);
+      setCookie('selectedDate', event.target.value, 7); // Save for 7 days
     });
 
     buildCalendar(todayStr);
