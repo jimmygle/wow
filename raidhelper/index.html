@@ -134,6 +134,25 @@
     </div>
   </div>
 
+  <div class="row">
+    <div>
+      <label for="announceMinutes">Minutes Before Start</label>
+      <select id="announceMinutes">
+        <option value="360">6 hours</option>
+        <option value="720">12 hours</option>
+        <option value="1440">1 day</option>
+        <option value="2880">2 days</option>
+        <option value="4320">3 days</option>
+        <option value="5760">4 days</option>
+        <option value="7200">5 days</option>
+      </select>  
+    </div>
+    <div style="flex: 2;">
+      <label for="announceMessage">Announcement Message</label>
+      <input type="text" id="announceMessage" placeholder="Example: Please remember to let the raid know if you can make it to {title}." value="Please remember to let the raid know if you can make it to {title}." />
+    </div>
+  </div>  
+
   <h2>Instructions</h2>
 
   <ol style="line-height: 2em">
@@ -152,8 +171,7 @@
 
   <strong>To-Do:</strong>
   <ul>
-    <li>Add announcement input with default values</li>
-    <li>Review advanced option overrides</li>
+    <li>Review advanced option overrides (reminder currently set to 45 min at server level)</li>
   </ul>
 
   <script>
@@ -166,6 +184,8 @@
     const softResSelect = document.getElementById('softres');
     const customMessageInput = document.getElementById('customMessage');
     const result = document.getElementById('result');
+    const announceMinutesInput = document.getElementById('announceMinutes');
+    const announceMessageInput = document.getElementById('announceMessage');
 
     const raidLabels = {
       mc: 'MC',
@@ -234,7 +254,18 @@
 
       const template = `[template:02][title:${raidLabel} - ${formattedDate}][channel:${channel}][date:${formattedFieldDate}][time:${time}][advanced:<color:${color}>][description:<:raid:1124529969926779050> Raid Lead: ${lead}${formattedMessage}][mentions:Critical Raider][image:${image}][softres:${raid},horde,${softResLimit},0,protected,visible,yes,yes]`;
 
-      result.textContent = template;
+      let finalTemplate = template;
+
+      // Handle optional announcement
+      const announceMinutes = announceMinutesInput.value.trim();
+      const announceMessage = announceMessageInput.value.trim();
+
+      if (announceMinutes && announceMessage) {
+        finalTemplate += `[announcement:${channel},${announceMinutes},"${announceMessage}"]`;
+      }
+
+      result.textContent = finalTemplate;
+      channelName.innerText = channel;
     }
 
     function handleAutoUpdate() {
@@ -249,6 +280,8 @@
     leadInput.addEventListener('input', updateTemplate);
     softResSelect.addEventListener('input', updateTemplate);
     customMessageInput.addEventListener('input', updateTemplate);
+    announceMinutesInput.addEventListener('input', updateTemplate);
+    announceMessageInput.addEventListener('input', updateTemplate);
 
     // Set default date to tomorrow
     const tomorrow = new Date();
