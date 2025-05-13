@@ -157,8 +157,7 @@
 
   <ol style="line-height: 2em">
     <li>Create channel under Calendar category in Discord, called <span id="channelName" class="highlight"></span></li>
-    <li>In the new channel, type <span class="highlight">/quickcreate</span> and hit enter.
-    <li>In the <span class="highlight">arguments</span>, where your cursor should be after hitting enter, copy and paste this:<br>
+    <li>In the new channel, paste the following:<br>
       <div class="output" id="result"></div>
     </li>
     <li>Hit enter and wait a moment for the event to be created. You should also receive a DM from the Raid-Helper bot.</li>
@@ -252,7 +251,7 @@
       // Check if the custom message is empty and remove the emoji if so
       const formattedMessage = customMessage ? `\\n> ${customMessage}` : customMessage;
 
-      const template = `[template:02][title:${raidLabel} - ${formattedDate}][channel:${channel}][date:${formattedFieldDate}][time:${time}][advanced:<color:${color}>][description:<:raid:1124529969926779050> Raid Lead: ${lead}${formattedMessage}][mentions:Critical Raider][image:${image}][softres:${raid},horde,${softResLimit},0,protected,visible,yes,yes]`;
+      const template = `/quickcreate date_and_time:${formattedFieldDate} at ${time} arguments:[template:02][title:${raidLabel} - ${formattedDate}][channel:${channel}][date:${formattedFieldDate}][time:${time}][advanced:<color:${color}>][description:<:raid:1124529969926779050> Raid Lead: ${lead}${formattedMessage}][mentions:Critical Raider][image:${image}][softres:${raid},horde,${softResLimit},0,protected,visible,yes,yes]`;
 
       let finalTemplate = template;
 
